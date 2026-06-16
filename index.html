@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<title>AI短线交易系统</title>
+<style>
+body {font-family:Arial;margin:20px;background:#f5f5f5;}
+textarea {width:100%;height:150px;}
+button {padding:10px;margin-top:10px;cursor:pointer;}
+table {width:100%;margin-top:20px;border-collapse:collapse;}
+th,td {border:1px solid #ddd;padding:8px;}
+.A {color:green;font-weight:bold;}
+.B {color:orange;font-weight:bold;}
+.C {color:red;}
+</style>
+</head>
+<body>
+
+<h2>📊 AI短线交易系统（GitHub Pages版）</h2>
+
+<p>输入CSV数据：T+1收盘涨幅,T+1最高涨幅,T+2收盘涨幅,板块5日涨跌幅</p>
+
+<textarea id="input"></textarea>
+<br>
+<button onclick="run()">生成信号</button>
+
+<table id="table"></table>
+
+<script>
+function calc(row){
+    let t1=parseFloat(row[0])||0;
+    let t1h=parseFloat(row[1])||0;
+    let t2=parseFloat(row[2])||0;
+    let board=parseFloat(row[3])||0;
+
+    let score=0;
+
+    if(t1>2) score+=20;
+    else if(t1>0) score+=10;
+
+    if(t1h>5) score+=15;
+
+    if(t2>=0) score+=10;
+    else if(t2>=-3) score+=5;
+    else score-=10;
+
+    if(board>0) score+=10;
+
+    let signal="C(不做)";
+    if(score>=45) signal="A(重仓)";
+    else if(score>=41) signal="B(轻仓)";
+
+    return [score,signal];
+}
+
+function run(){
+    let lines=document.getElementById("input").value.trim().split("\n");
+    let html="<tr><th>Score</th><th>Signal</th></tr>";
+
+    for(let l of lines){
+        let row=l.split(",");
+        if(row.length<4) continue;
+        let res=calc(row);
+
+        let cls=res[1].includes("A")?"A":res[1].includes("B")?"B":"C";
+
+        html+=`<tr><td>${res[0]}</td><td class="${cls}">${res[1]}</td></tr>`;
+    }
+
+    document.getElementById("table").innerHTML=html;
+}
+</script>
+
+</body>
+</html>
